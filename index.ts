@@ -4,13 +4,13 @@ interface WebSocketData {
 }
 
 const server = Bun.serve<WebSocketData>({
-  fetch(req, server) {
-    const cookies = req.headers.get("cookie");
-      const success = server.upgrade(req, { data: { username } });
-    //   if (success) return undefined;
-    console.log("fetch");
-    return new Response(JSON.stringify(cookies));
+  port: process.env.PORT || 4000,
+
+
+  async fetch(req, server) {
+    return undefined;
   },
+  
   websocket: {
     open(ws) {
       const msg = `${ws.data.username} has entered`;
@@ -30,3 +30,7 @@ const server = Bun.serve<WebSocketData>({
 });
 
 console.log(`Listening on ${server.hostname}:${server.port}`);
+
+type Cookies = null | {
+  auth_session: string;
+};

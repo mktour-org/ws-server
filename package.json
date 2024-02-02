@@ -9,9 +9,11 @@
     "typescript": "^5.0.0"
   },
   "scripts": {
-    "start": "bun run index.ts"
+    "start": "bun run index.ts",
+    "dev": "bun --watch index.ts"
   },
   "dependencies": {
+    "dotenv": "^16.4.1",
     "lucia": "^3.0.1"
   }
 }
