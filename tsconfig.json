@@ -13,6 +13,10 @@
     "verbatimModuleSyntax": true,
     "noEmit": true,
 
+    "paths": {
+      "@/*": ["./*"],
+    },
+
     /* Linting */
     "skipLibCheck": true,
     "strict": true,

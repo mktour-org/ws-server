@@ -13,7 +13,10 @@
     "dev": "bun --watch index.ts"
   },
   "dependencies": {
+    "@libsql/client": "^0.4.3",
+    "@lucia-auth/adapter-drizzle": "^1.0.0",
     "dotenv": "^16.4.1",
+    "drizzle-orm": "^0.29.3",
     "lucia": "^3.0.1"
   }
 }

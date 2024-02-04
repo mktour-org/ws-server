@@ -1,16 +1,33 @@
+import { lucia } from "./lib/lucia";
+
 interface WebSocketData {
   username: string;
   tournamentId: string;
 }
 
 const server = Bun.serve<WebSocketData>({
-  port: process.env.PORT || 4000,
-
+  port: process.env.PORT || 8080,
 
   async fetch(req, server) {
-    return undefined;
+    const url = new URL(req.url);
+    const cookies: {[key: string]: string} = {};
+    req.headers
+      .get("cookie")
+      ?.split("; ")
+      ?.forEach((cook) => {
+        const splittedCook = cook.split("=") as [string, string];
+        cookies[splittedCook[0]] = splittedCook[1];
+      });
+    
+    const { user } = await lucia.validateSession(cookies.auth_session);
+
+    // console.log(user);
+    const tournamentId = url.pathname.replace("/", "");
+    server.upgrade(req, { data: { tournamentId, username: user?.username } });
+    console.log(`we are fetched! by ${user?.username}`);
+    return;
   },
-  
+
   websocket: {
     open(ws) {
       const msg = `${ws.data.username} has entered`;
@@ -18,7 +35,9 @@ const server = Bun.serve<WebSocketData>({
       ws.publish(ws.data.tournamentId, msg);
     },
     message(ws, message) {
-      // the server re-broadcasts incoming messages to everyone
+      // the server re-broadcasts incoming messages to everyone;
+      console.log(message);
+      console.log(ws.data.tournamentId, `${ws.data.username}: ${message}`);
       ws.publish(ws.data.tournamentId, `${ws.data.username}: ${message}`);
     },
     close(ws) {
