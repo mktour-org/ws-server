@@ -1,4 +1,4 @@
-import { lucia } from "./lib/lucia";
+import { lucia } from "@/lib/lucia"
 
 interface WebSocketData {
   username: string;

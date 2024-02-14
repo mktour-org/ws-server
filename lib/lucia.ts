@@ -1,4 +1,4 @@
-import { Lucia, type Session, type User } from "lucia";
+import { Lucia } from "lucia";
 import { adapter } from "@/lib/lucia-adapter";
 import type { DatabaseUser } from "@/lib/db/schema/auth";
 
