@@ -5,7 +5,7 @@ interface WebSocketData {
   tournamentId: string;
 }
 
-const server = Bun.serve<WebSocketData>({
+export const server = Bun.serve<WebSocketData>({
   port: process.env.PORT || 8080,
 
   async fetch(req, server) {
@@ -53,3 +53,5 @@ console.log(`Listening on ${server.hostname}:${server.port}`);
 type Cookies = null | {
   auth_session: string;
 };
+
+
