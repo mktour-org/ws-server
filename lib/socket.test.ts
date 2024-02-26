@@ -30,7 +30,7 @@ describe("server connection", () => {
   })
   test("connect to server", 
     () => {
-      socket;
+      socket
     }
   )
   afterAll(() => {
