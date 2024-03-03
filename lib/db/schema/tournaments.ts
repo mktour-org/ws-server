@@ -1,74 +1,74 @@
-import { users } from "@/lib/db/schema/auth";
-import type { InferSelectModel } from "drizzle-orm";
-import { int, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { users } from '@/lib/db/schema/auth';
+import type { InferSelectModel } from 'drizzle-orm';
+import { int, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
-export const players = sqliteTable("player", {
-  id: text("id").primaryKey(),
-  nickname: text("nickname"),
-  user_id: text("user_id").references(() => users.id),
-  rating: int("rating"),
-  club_id: text("club_id")
+export const players = sqliteTable('player', {
+  id: text('id').primaryKey(),
+  nickname: text('nickname'),
+  user_id: text('user_id').references(() => users.id),
+  rating: int('rating'),
+  club_id: text('club_id')
     .references(() => clubs.id)
     .notNull(), // TODO! add constraint on combination fo club_id and nickname
 });
 
-export const tournaments = sqliteTable("tournament", {
-  id: text("id").primaryKey(),
-  title: text("name").$default(() => "tournament"),
-  format: text("format").$type<Format>(),
-  type: text("type").$type<TournamentType>(),
-  date: text("date"),
-  timestamp: integer("timestamp"),
-  club_id: text("club_id")
+export const tournaments = sqliteTable('tournament', {
+  id: text('id').primaryKey(),
+  title: text('name').$default(() => 'tournament'),
+  format: text('format').$type<Format>(),
+  type: text('type').$type<TournamentType>(),
+  date: text('date'),
+  timestamp: integer('timestamp'),
+  club_id: text('club_id')
     .references(() => clubs.id)
     .notNull(),
-  is_started: integer("is_started", { mode: "boolean" }).$default(() => false),
-  is_closed: integer("is_closed", { mode: "boolean" }).$default(() => false),
+  is_started: integer('is_started', { mode: 'boolean' }).$default(() => false),
+  is_closed: integer('is_closed', { mode: 'boolean' }).$default(() => false),
 });
 
-export const clubs = sqliteTable("club", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  lichess_team: text("lichess_team"),
+export const clubs = sqliteTable('club', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  lichess_team: text('lichess_team'),
 });
 
-export const clubs_to_users = sqliteTable("clubs_to_users", {
-  club_id: text("club_id")
+export const clubs_to_users = sqliteTable('clubs_to_users', {
+  club_id: text('club_id')
     .notNull()
     .references(() => clubs.id),
-  user_id: text("user_id")
+  user_id: text('user_id')
     .notNull()
     .references(() => users.id),
-  status: text("status").notNull().$type<StatusInClub>(),
+  status: text('status').notNull().$type<StatusInClub>(),
 });
 
-export const players_to_tournaments = sqliteTable("players_to_tournaments", {
+export const players_to_tournaments = sqliteTable('players_to_tournaments', {
   // join table where single tournament participants are stored
-  player_id: text("player_id")
+  player_id: text('player_id')
     .notNull()
     .references(() => players.id),
-  tournament_id: text("tournament_id")
+  tournament_id: text('tournament_id')
     .notNull()
     .references(() => tournaments.id),
-  wins: int("wins").$default(() => 0),
-  losses: int("losses").$default(() => 0),
-  draws: int("draws").$default(() => 0),
-  color_index: int("color_index").$default(() => 0),
-  place: int("place"),
+  wins: int('wins').$default(() => 0),
+  losses: int('losses').$default(() => 0),
+  draws: int('draws').$default(() => 0),
+  color_index: int('color_index').$default(() => 0),
+  place: int('place'),
 });
 
-export const games = sqliteTable("game", {
-  id: text("id").primaryKey(),
-  round_number: integer("round_number"),
-  white_id: text("white_id").references(() => players.id),
-  black_id: text("black_id").references(() => players.id),
-  result: text("result").$type<Result>(),
-  tournament_id: text("tournament_id").references(() => tournaments.id),
+export const games = sqliteTable('game', {
+  id: text('id').primaryKey(),
+  round_number: integer('round_number'),
+  white_id: text('white_id').references(() => players.id),
+  black_id: text('black_id').references(() => players.id),
+  result: text('result').$type<Result>(),
+  tournament_id: text('tournament_id').references(() => tournaments.id),
 });
 
-export type Result = "0-1" | "1-0" | "1/2-1/2" | undefined;
-export type Format = "swiss" | "round robin" | "double elimination";
-export type TournamentType = "solo" | "doubles" | "team";
+export type Result = '0-1' | '1-0' | '1/2-1/2' | undefined;
+export type Format = 'swiss' | 'round robin' | 'double elimination';
+export type TournamentType = 'solo' | 'doubles' | 'team';
 
 export type DatabasePlayer = InferSelectModel<typeof players>;
 export type DatabaseTournament = InferSelectModel<typeof tournaments>;
@@ -78,4 +78,4 @@ export type DatabaseGame = InferSelectModel<typeof games>;
 export type DatabasePlayerToTournament = InferSelectModel<
   typeof players_to_tournaments
 >;
-export type StatusInClub = "admin" | "moderator";
+export type StatusInClub = 'admin' | 'moderator';

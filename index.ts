@@ -1,4 +1,4 @@
-import { lucia } from "@/lib/lucia"
+import { validateRequest } from '@/lib/lucia';
 
 interface WebSocketData {
   username: string;
@@ -6,23 +6,23 @@ interface WebSocketData {
 }
 
 const server = Bun.serve<WebSocketData>({
-  port: process.env.PORT || 8080,
+  port: process.env.PORT || 7070,
 
   async fetch(req, server) {
     const url = new URL(req.url);
-    const cookies: {[key: string]: string} = {};
+    const cookies: { [key: string]: string } = {};
     req.headers
-      .get("cookie")
-      ?.split("; ")
+      .get('cookie')
+      ?.split('; ')
       ?.forEach((cook) => {
-        const splittedCook = cook.split("=") as [string, string];
+        const splittedCook = cook.split('=') as [string, string];
         cookies[splittedCook[0]] = splittedCook[1];
       });
-    
-    const { user } = await lucia.validateSession(cookies.auth_session);
+
+    const { user } = await validateRequest(cookies?.auth_session || '');
 
     // console.log(user);
-    const tournamentId = url.pathname.replace("/", "");
+    const tournamentId = url.pathname.replace('/', '');
     server.upgrade(req, { data: { tournamentId, username: user?.username } });
     console.log(`we are fetched! by ${user?.username}`);
     return;
