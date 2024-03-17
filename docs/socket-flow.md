@@ -23,14 +23,21 @@ Initially every entrant is subscribed to four topics. so for entry function of W
 When the socket is closed, you should remember to unsubscribe the user from all the topics! 
 
 
+### checking the user status for roles 
+That thing can be published ONLY by the club administrator and moderator, we check that by checking `clubs-to-users` table. 
+
 
 tournament-games: 
 
 
 
 1. game-result-added
-
-Basically we would like the player to be able to say to us that game result was added. Probably this doesn't need serious action from the server. That thing can be published ONLY by the club administrator and moderator. If we receive that message on server, we surely want to set the `result` of game to the result we received by the `gameId`. If the client receives it, we would like to find that game on a page, if it is there, and
+ROLE-PUB: ADMIN|MODERATOR
+ROLE-SUB: ANYONE
+DESCRIPTION: Basically we would like the player to be able to say to us that game result was added. Probably this doesn't need serious action from the server. 
+SERVER-RECEIVE: We surely want to set the `result` of game to the result we received by the `gameId`. 
+CLIENT-PUB: 
+CLIENT-RECEIVE: We would like to find that game on a client's page, if it is there, and update it's result accordingly.
 
 2. game-result-changed
 
