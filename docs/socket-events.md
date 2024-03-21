@@ -2,11 +2,13 @@ This is a file which depicts types of socket events related to tournament standi
 PUB-SUB
 
 
+every tournament has its own prefix, so it looks like this. id is id of tournament, see schema.
+
 topics:
-1. tournament-games
-2. tournament-status
-3. tournament-bracket
-4. tournament-players
+1. tournament/id/games
+2. tournament/id/status
+3. tournament/id/bracket
+4. tournament/id/players
 
 tournament-games: 
 1. game-result-added

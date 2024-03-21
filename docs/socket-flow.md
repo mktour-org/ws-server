@@ -13,14 +13,19 @@ Also it is worth to remember, that we design our socket system on the PUB/SUB pa
 
 
 
-Initially every entrant is subscribed to four topics. so for entry function of WS: 
-1. tournament-games
-2. tournament-status
-3. tournament-bracket
-4. tournament-players
-. This is for open function of WS.
+# open function ws client
 
-When the socket is closed, you should remember to unsubscribe the user from all the topics! 
+
+Initially every entrant is subscribed to one topic, related to the tournament this user currently watches. There are 4 topics for each  of events: 
+topics:
+1. tournament/id/games
+2. tournament/id/status
+3. tournament/id/bracket
+4. tournament/id/players
+
+. This is for open function of WS. So we need to receive the watched tournament, and then subscribe!.
+
+When the socket is closed, you should remember to unsubscribe the user from all the topics!
 
 
 ### checking the user status for roles 
@@ -34,14 +39,21 @@ tournament-games:
 1. game-result-added
 ROLE-PUB: ADMIN|MODERATOR
 ROLE-SUB: ANYONE
-DESCRIPTION: Basically we would like the player to be able to say to us that game result was added. Probably this doesn't need serious action from the server. 
-SERVER-RECEIVE: We surely want to set the `result` of game to the result we received by the `gameId`. 
-CLIENT-PUB: 
+DESCRIPTION: Basically we would like the player to be able to say to us that game result was added.
+SERVER-RECEIVE: We surely want to set the `result` of game to the result we received by the `gameId` in the database.
+CLIENT-PUB: Client sends the message with the form of the related event `game-result-added` to the needed topic.
 CLIENT-RECEIVE: We would like to find that game on a client's page, if it is there, and update it's result accordingly.
 
 2. game-result-changed
 
-This is meaning that we would like player to be able to change the result.  Also ADMIN | MODERATOR.
+This is meaning that we would like player to be able to change the result.  
+
+ROLE-PUB: ADMIN|MODERATOR
+ROLE-SUB: ANYONE
+DESCRIPTION: Basically we would like the player to be able to say to us that game result was changed. 
+SERVER-RECEIVE: We surely want to set the `result` of game to the result we received by the `gameId`. 
+CLIENT-PUB: Client sends the message with the form of the related event `game-result-added` to the needed topic.
+CLIENT-RECEIVE: We would like to find that game on a client's page, if it is there, and update it's result accordingly.
 
 
 3. game-result-aborted

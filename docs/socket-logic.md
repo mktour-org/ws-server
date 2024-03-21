@@ -1,7 +1,10 @@
 
 
-User initially connects to websockets. Then user subscribes to all the topics (see `socket-events.md`).
+User initially connects to websockets. Then user subscribes to all the topics (see `socket-events.md`). Well, I've realised that every tournament has its own update scheme probably. I won't changet the scheme for now. 
 
+
+
+WE have a new thing now, we have an id of tournament in the socket , but it just means that the scope is defined per-id
 
 
 # tournament-games
