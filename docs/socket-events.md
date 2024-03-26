@@ -5,15 +5,10 @@ PUB-SUB
 every tournament has its own prefix, so it looks like this. id is id of tournament, see schema.
 
 topics:
-1. tournament/id/games
-2. tournament/id/status
-3. tournament/id/bracket
-4. tournament/id/players
+1. tournament/id
 
 tournament-games: 
-1. game-result-added
-2. game-result-changed
-3. game-result-aborted
+1. game-result-changed
 
 tournament-status:
 1. tournament-started

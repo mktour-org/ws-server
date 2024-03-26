@@ -11,17 +11,6 @@ WE have a new thing now, we have an id of tournament in the socket , but it just
 
 this is a topic which contains mostly the game-related info, like standing changes and stuff. 
 
-## game-result-added 
-
-This describes an event when someone added a game result. 
-
-{   
-    topicName: "tournament-games",
-    eventName: "result-added",
-    gameId: pk,
-    gameResult: Result
-}
-
 
 ## game-result-changed
 
@@ -29,21 +18,11 @@ This dsecribes an event when a result of game was changed.
 
 
 {   
-    topicName: "tournament-games",
     eventName: "result-changed",
     gameId: pk,
     gameResult: Result
 }
 
-## game-result-aborted
-
-This describes a retract of game result
-
-{   
-    topicName: "tournament-games",
-    eventName: "result-aborted"
-    gameId: pk
-}
 
 
 
@@ -56,9 +35,7 @@ this topic is a mostly a thing, which represents current state of a tournament, 
 this event describes a tournament start
 
 {
-    topicName: "tournament-status",
-    eventName: "tournament-started"
-    tournamentId
+    eventName: "tournament-started",
 }
 
 ## tournament-finished
@@ -66,9 +43,7 @@ this event describes a tournament start
 this event describes a finish of a tournament
 
 {
-    topicName: "tournament-status",
     eventName: "tournament-finished",
-    tournamentId
 }
 
 ## tournament-renamed
@@ -76,9 +51,7 @@ this event describes a finish of a tournament
 this event represents change of tournament title
 
 {
-    topicName: "tournament-status",
     eventName: "tournament-renamed",
-    tournamentId,
     tournamentTitle
 }
 
@@ -87,9 +60,7 @@ this event represents change of tournament title
 this event represents change of tournament type mostly
 
 {
-    topicName: "tournament-type-changed",
-    eventName: "tournament-started",
-    tournamentId,
+    eventName: "tournament-type-changed",
     tournamentType
 }
 
@@ -105,7 +76,6 @@ this topic is mostly for bracket related changes, when a new round is published,
 ## bracket-round-generated
 
 {
-    topicName: "tournament-bracket",
     eventName: "bracket-generated",
     generatedGames: [
         {
@@ -130,7 +100,6 @@ this is the only pure player related topic, which covers all the operations rela
 this is an event which fires when player enters tournament.
 
 {
-    topicName: "tournament-players",
     eventName: "player-entered",
     playerId,
     playerNickname,
@@ -144,7 +113,6 @@ this is an event which fires when player enters tournament.
 this is an event firing in case of substitutions in-tournament
 
 {
-    topicName: "tournament-players",
     eventName: "player-substituted",
     newPlayer: {
         playerId,
@@ -164,7 +132,6 @@ this is an event firing in case of substitutions in-tournament
 if a player left the tournament
 
 {
-    topicName: "tournament-players",
     eventName: "player-left",
     playerId
 }
@@ -173,7 +140,6 @@ if a player left the tournament
 if a player was renamed on the fly
 
 {
-    topicName: "tournament-players",
     eventName: "player-renamed",
     playerId,
     playerNewNickname

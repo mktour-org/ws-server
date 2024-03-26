@@ -16,12 +16,10 @@ Also it is worth to remember, that we design our socket system on the PUB/SUB pa
 # open function ws client
 
 
-Initially every entrant is subscribed to one topic, related to the tournament this user currently watches. There are 4 topics for each  of events: 
-topics:
-1. tournament/id/games
-2. tournament/id/status
-3. tournament/id/bracket
-4. tournament/id/players
+Initially every entrant is subscribed to one topic, related to the tournament this user currently watches. There are 1 topic for each  of events: 
+topic:
+tournament/id/
+
 
 . This is for open function of WS. So we need to receive the watched tournament, and then subscribe!.
 
@@ -34,17 +32,7 @@ That thing can be published ONLY by the club administrator and moderator, we che
 
 tournament-games: 
 
-
-
-1. game-result-added
-ROLE-PUB: ADMIN|MODERATOR
-ROLE-SUB: ANYONE
-DESCRIPTION: Basically we would like the player to be able to say to us that game result was added.
-SERVER-RECEIVE: We surely want to set the `result` of game to the result we received by the `gameId` in the database.
-CLIENT-PUB: Client sends the message with the form of the related event `game-result-added` to the needed topic.
-CLIENT-RECEIVE: We would like to find that game on a client's page, if it is there, and update it's result accordingly.
-
-2. game-result-changed
+1. game-result-changed
 
 This is meaning that we would like player to be able to change the result.  
 
@@ -52,26 +40,43 @@ ROLE-PUB: ADMIN|MODERATOR
 ROLE-SUB: ANYONE
 DESCRIPTION: Basically we would like the player to be able to say to us that game result was changed. 
 SERVER-RECEIVE: We surely want to set the `result` of game to the result we received by the `gameId`. 
-CLIENT-PUB: Client sends the message with the form of the related event `game-result-added` to the needed topic.
+CLIENT-PUB: Client sends the message with the form of the related event `game-result-changed` to the needed topic.
 CLIENT-RECEIVE: We would like to find that game on a client's page, if it is there, and update it's result accordingly.
 
-
-3. game-result-aborted
-
-We would like player to destroy the game result, and leave a game without result. ADMIN | MODERATOR.
 
 
 tournament-status:
 1. tournament-started
 
-We would like player to be able to receive updates that tournament has been started. Also, probably Admin should be able to manually start the tournament.
 
+ROLE-PUB: ADMIN|MODERATOR
+ROLE-SUB: ANYONE
+DESCRIPTION: Basically we would like to inform about the tournament starting sequence. 
+SERVER-RECEIVE: Update the tournament db by id, more precisely `is-started` field
+CLIENT-PUB: Client sends the message with the form of the related event `tournament-started` to the needed topic.
+CLIENT-RECEIVE: We would like to execute sequence of tournament starting on the page. 
 
 2. tournament-finished
 
-Again, the way to update user that tournament has been finished is desirable. After that, the tournament 
+
+ROLE-PUB: ADMIN|MODERATOR
+ROLE-SUB: ANYONE
+DESCRIPTION: Basically we would like to inform about the tournament is finished. 
+SERVER-RECEIVE: Update the tournament db by id, more precisely `is-closed` field.
+CLIENT-PUB: Client sends the message with the form of the related event `tournament-finished` to the needed topic.
+CLIENT-RECEIVE: We would like to execute sequence of tournament finishing on the page. 
+
 
 3. tournament-renamed
+
+
+ROLE-PUB: ADMIN|MODERATOR
+ROLE-SUB: ANYONE
+DESCRIPTION: Informing the people about the new tournament name!! 
+SERVER-RECEIVE: Update the tournament db by id, more precisely put the string from the event `tournamentTitle` to the
+CLIENT-PUB: Client sends the message with the form of the related event `tournament-finished` to the needed topic.
+CLIENT-RECEIVE: We would like to execute sequence of tournament finishing on the page. 
+
 4. tournament-type-changed
 
 tournament-bracket:
