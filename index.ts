@@ -36,7 +36,6 @@ const server = Bun.serve<WebSocketData>({
     },
     message(ws, message) {
       // the server re-broadcasts incoming messages to everyone;
-      console.log(message);
       console.log(ws.data.tournamentId, `${ws.data.username}: ${message}`);
       ws.publish(ws.data.tournamentId, `${ws.data.username}: ${message}`);
     },
