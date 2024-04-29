@@ -7,7 +7,10 @@ interface WebSocketData {
 
 const server = Bun.serve<WebSocketData>({
   port: process.env.PORT || 7070,
-
+  tls: {
+    cert: Bun.file("fullchain.pem"),
+    key: Bun.file("privkey.pem"),
+  },
   async fetch(req, server) {
     const url = new URL(req.url);
     const cookies: { [key: string]: string } = {};
