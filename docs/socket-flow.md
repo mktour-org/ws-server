@@ -110,5 +110,12 @@ CLIENT-PUB: Client informs everyone here.
 CLIENT-RECEIVE: If we didn't publish this, we want to know something happened!
 
 2. player-substituted
+ROLE-PUB: USER
+ROLE-SUB: ANYONE
+DESCRIPTION: New player entered the tournament!
+SERVER-RECEIVE: Some magic in the server like adding the player to the list
+CLIENT-PUB: Client informs everyone here. 
+CLIENT-RECEIVE: If we didn't publish this, we want to know something happened!
+
 3. player-left
 4. player-renamed
