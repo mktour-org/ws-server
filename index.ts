@@ -1,5 +1,6 @@
 import { validateRequest } from '@/lib/lucia';
 
+
 interface WebSocketData {
   username: string;
   tournamentId: string;
@@ -8,8 +9,8 @@ interface WebSocketData {
 const server = Bun.serve<WebSocketData>({
   port: process.env.PORT || 7070,
   tls: {
-    cert: Bun.file("fullchain.pem"),
-    key: Bun.file("privkey.pem"),
+    key: Bun.file('/usr/src/app/privkey.pem'),
+    cert: Bun.file('/usr/src/app/fullchain.pem') 
   },
   async fetch(req, server) {
     const url = new URL(req.url);
