@@ -1,4 +1,5 @@
 import { validateRequest } from '@/lib/lucia';
+import { TLS } from './config/tls';
 
 
 interface WebSocketData {
@@ -8,10 +9,7 @@ interface WebSocketData {
 
 const server = Bun.serve<WebSocketData>({
   port: process.env.PORT || 7070,
-  tls: {
-    key: Bun.file('/usr/src/app/privkey.pem'),
-    cert: Bun.file('/usr/src/app/fullchain.pem') 
-  },
+  tls: TLS,
   async fetch(req, server) {
     const url = new URL(req.url);
     const cookies: { [key: string]: string } = {};
