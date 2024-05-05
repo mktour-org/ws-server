@@ -1,7 +1,6 @@
 import { validateRequest } from '@/lib/lucia';
 import { TLS } from './config/tls';
 
-
 interface WebSocketData {
   username: string;
   tournamentId: string;
@@ -38,8 +37,10 @@ const server = Bun.serve<WebSocketData>({
     },
     message(ws, message) {
       // the server re-broadcasts incoming messages to everyone;
-      console.log(ws.data.tournamentId, `${ws.data.username}: ${message}`);
-      ws.publish(ws.data.tournamentId, `${ws.data.username}: ${message}`);
+      if (message !== 'ping') {
+        console.log(ws.data.tournamentId, `${ws.data.username}: ${message}`);
+        ws.publish(ws.data.tournamentId, `${ws.data.username}: ${message}`);
+      }
     },
     close(ws) {
       const msg = `${ws.data.username} has left`;
