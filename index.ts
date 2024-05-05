@@ -22,7 +22,7 @@ const server = Bun.serve<WebSocketData>({
 
     const { user } = await validateRequest(cookies?.auth_session || '');
 
-    // console.log(user);
+    console.log(req.headers);
     const tournamentId = url.pathname.replace('/', '');
     server.upgrade(req, { data: { tournamentId, username: user?.username } });
     console.log(`we are fetched! by ${user?.username}`);
