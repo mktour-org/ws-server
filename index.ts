@@ -1,4 +1,5 @@
 import { validateRequest } from '@/lib/lucia';
+
 import { TLS } from './config/tls';
 
 interface WebSocketData {
@@ -26,7 +27,14 @@ const server = Bun.serve<WebSocketData>({
     const tournamentId = url.pathname.replace('/', '');
     server.upgrade(req, { data: { tournamentId, username: user?.username } });
     console.log(`we are fetched! by ${user?.username}`);
-    return;
+
+    const res = new Response(JSON.stringify(req.headers), {
+      headers: {
+        'Content-Type': 'text/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+    return res;
   },
 
   websocket: {
