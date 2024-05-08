@@ -12,29 +12,17 @@ const server = Bun.serve<WebSocketData>({
   tls: TLS,
   async fetch(req, server) {
     const url = new URL(req.url);
-    const cookies: { [key: string]: string } = {};
-    req.headers
-      .get('cookie')
-      ?.split('; ')
-      ?.forEach((cook) => {
-        const splittedCook = cook.split('=') as [string, string];
-        cookies[splittedCook[0]] = splittedCook[1];
-      });
+    const { user } = await validateRequest(
+      url.searchParams.get('auth_session') ?? '',
+    );
 
-    const { user } = await validateRequest(cookies?.auth_session || '');
-
-    console.log(req.headers);
     const tournamentId = url.pathname.replace('/', '');
     server.upgrade(req, { data: { tournamentId, username: user?.username } });
     console.log(`we are fetched! by ${user?.username}`);
 
-    const res = new Response(JSON.stringify(req.headers), {
-      headers: {
-        'Content-Type': 'text/json',
-        'Access-Control-Allow-Origin': '*',
-      },
+    return new Response(JSON.stringify(req.headers), {
+      headers: { 'Content-Type': 'text/json' },
     });
-    return res;
   },
 
   websocket: {
