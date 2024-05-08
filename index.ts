@@ -47,7 +47,3 @@ const server = Bun.serve<WebSocketData>({
 });
 
 console.log(`Listening on ${server.hostname}:${server.port}`);
-
-type Cookies = null | {
-  auth_session: string;
-};
