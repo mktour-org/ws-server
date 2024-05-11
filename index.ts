@@ -17,7 +17,12 @@ const server = Bun.serve<WebSocketData>({
     );
 
     const tournamentId = url.pathname.replace('/', '');
-    server.upgrade(req, { data: { tournamentId, username: user?.username } });
+    server.upgrade(req, {
+      data: { tournamentId, username: user?.username },
+      headers: {
+        'Set-Cookie': `SessionId=${user?.username}`,
+      },
+    });
     console.log(`we are fetched! by ${user?.username}`);
 
     return new Response(JSON.stringify(req.headers), {
@@ -26,21 +31,22 @@ const server = Bun.serve<WebSocketData>({
   },
 
   websocket: {
+    sendPings: true,
     open(ws) {
       const msg = `${ws.data.username} has entered`;
+      console.log(msg);
       ws.subscribe(ws.data.tournamentId);
-      ws.publish(ws.data.tournamentId, msg);
     },
     message(ws, message) {
-      // the server re-broadcasts incoming messages to everyone;
-      if (message !== 'ping') {
+      if (!message) ws.send('');
+      else {
         console.log(ws.data.tournamentId, `${ws.data.username}: ${message}`);
         ws.publish(ws.data.tournamentId, message);
       }
     },
     close(ws) {
       const msg = `${ws.data.username} has left`;
-      server.publish(ws.data.tournamentId, msg);
+      console.log(msg);
       ws.unsubscribe(ws.data.tournamentId);
     },
   },
