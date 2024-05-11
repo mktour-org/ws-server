@@ -1,6 +1,6 @@
 import { validateRequest } from '@/lib/lucia';
 
-import { TLS } from './config/tls';
+import { TLS } from './lib/config/tls';
 
 interface WebSocketData {
   username: string;
