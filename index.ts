@@ -35,7 +35,7 @@ const server = Bun.serve<WebSocketData>({
       // the server re-broadcasts incoming messages to everyone;
       if (message !== 'ping') {
         console.log(ws.data.tournamentId, `${ws.data.username}: ${message}`);
-        ws.publish(ws.data.tournamentId, `${ws.data.username}: ${message}`);
+        ws.publish(ws.data.tournamentId, message);
       }
     },
     close(ws) {
