@@ -3,7 +3,7 @@ interface Message {
     body: PlayerModel;
 };
 
-type MessageType = 'add-player' | 'add-new-player'
+type MessageType = 'add-existing-player' | 'add-new-player'
 
 interface PlayerModel {
   id: string;

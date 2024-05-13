@@ -7,7 +7,7 @@
 1. message shape:
    ```ts
    interface AddPlayer {
-     type: 'add-player';
+     type: 'add-existing-player';
      body: {
        id: string;
        nickname: string;
