@@ -6,7 +6,7 @@ import { handleMessage } from './lib/handle-message';
 
 import type { Status } from './lib/get-status-in-tournament';
 
-interface WebSocketData {
+export interface WebSocketData {
   username: string;
   tournamentId: string;
   status: Status;

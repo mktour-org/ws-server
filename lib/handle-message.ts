@@ -1,3 +1,4 @@
+import type { ServerWebSocket } from 'bun';
 import { db } from './db';
 import {
   players,
@@ -6,9 +7,10 @@ import {
   type DatabasePlayerToTournament,
 } from './db/schema/tournaments';
 import { newid } from './utils';
+import type { WebSocketData } from '..';
 
 export const handleMessage = async (
-  ws,
+  ws: ServerWebSocket<WebSocketData>,
   message: Message,
   tournamentId: string,
 ) => {
@@ -27,14 +29,14 @@ export const handleMessage = async (
       try {
         await db.insert(players_to_tournaments).values(newRelation);
       } catch (e) {
-        ws.send({
+        ws.send(JSON.stringify({
           type: 'error',
           body: {
             message: "couldn't add player to the tournament",
             type: message.type,
             body: message.body,
           },
-        });
+        }));
       }
       break;
     case 'add-new-player':
@@ -46,6 +48,7 @@ export const handleMessage = async (
           realname: null,
           rating: message.body.rating ?? null,
           user_id: null,
+          last_seen: 0,
         };
         await db.insert(players).values(newPlayer);
         const playerToTournament: DatabasePlayerToTournament = {
@@ -60,7 +63,7 @@ export const handleMessage = async (
         };
         await db.insert(players_to_tournaments).values(playerToTournament);
       } catch (e) {
-        ws.send({
+        ws.send(JSON.stringify({
           type: 'error',
           body: {
             message:
@@ -68,7 +71,7 @@ export const handleMessage = async (
             type: message.type,
             body: message.body,
           },
-        });
+        }));
       }
       break;
 

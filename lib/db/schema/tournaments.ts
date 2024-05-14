@@ -1,6 +1,6 @@
 import { users } from '@/lib/db/schema/auth';
-import { Format, Result, RoundName, TournamentType } from '@/types/tournaments';
-import { InferSelectModel } from 'drizzle-orm';
+import type { Format, Result, RoundName, TournamentType } from '@/types/tournaments';
+import type { InferSelectModel } from 'drizzle-orm';
 import { int, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const players = sqliteTable('player', {
@@ -12,6 +12,7 @@ export const players = sqliteTable('player', {
   club_id: text('club_id')
     .references(() => clubs.id)
     .notNull(), // TODO: add constraint on combination fo club_id and nickname
+  last_seen: integer('last_seen'), // equals closed_at() last tournament they participated
 });
 
 export const tournaments = sqliteTable('tournament', {
@@ -28,7 +29,8 @@ export const tournaments = sqliteTable('tournament', {
     .notNull(),
   started_at: integer('started_at'),
   closed_at: integer('closed_at'),
-  rounds_number: integer('rounds_number'), // necessary even if playing single elimination (final and match_for_third have same number)
+  rounds_number: integer('rounds_number'), // necessary even if playing single elimination (final and match_for_third have same number);
+  ongoing_round: integer('ongoing_round'),
 });
 
 export const clubs = sqliteTable('club', {
@@ -83,6 +85,8 @@ export const games = sqliteTable('game', {
   black_id: text('black_id')
     .references(() => players.id)
     .notNull(),
+  white_prev_game_id: text('white_prev_game_id'),
+  black_prev_game_id: text('black_prev_game_id'),
   result: text('result').$type<Result>(),
   tournament_id: text('tournament_id')
     .references(() => tournaments.id)
