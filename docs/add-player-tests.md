@@ -29,6 +29,7 @@
 ## add completely new player
 
 1. message shape:
+
    ```ts
    interface AddPlayer {
      type: 'add-new-player';
