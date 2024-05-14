@@ -50,7 +50,7 @@ const server = Bun.serve<WebSocketData>({
         if (ws.data.status === 'organizer') {
           console.log(ws.data.tournamentId, `${ws.data.username}: ${message}`);
           ws.publish(ws.data.tournamentId, message);
-          handleMessage(data, ws.data.tournamentId);
+          handleMessage(ws, data, ws.data.tournamentId);
         }
       }
     },
