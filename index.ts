@@ -1,11 +1,10 @@
 import { validateRequest } from '@/lib/lucia';
 
 import { TLS } from './lib/config/tls';
-import {
-  getStatusInTournament,
-  type Status,
-} from './lib/get-status-in-tournament';
-import type { StatusInClub } from './lib/db/schema/tournaments';
+import { getStatusInTournament } from './lib/get-status-in-tournament';
+import { handleMessage } from './lib/handle-message';
+
+import type { Status } from './lib/get-status-in-tournament';
 
 interface WebSocketData {
   username: string;
@@ -46,9 +45,12 @@ const server = Bun.serve<WebSocketData>({
     message(ws, message) {
       if (!message) ws.send('');
       else {
+        if (message instanceof Buffer) return;
+        const data = JSON.parse(message) as Message;
         if (ws.data.status === 'organizer') {
           console.log(ws.data.tournamentId, `${ws.data.username}: ${message}`);
           ws.publish(ws.data.tournamentId, message);
+          handleMessage(data, ws.data.tournamentId);
         }
       }
     },
