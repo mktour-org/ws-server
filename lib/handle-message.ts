@@ -8,6 +8,8 @@ import {
 } from './db/schema/tournaments';
 import { newid } from './utils';
 import type { WebSocketData } from '..';
+import { and, eq } from 'drizzle-orm';
+import { errorMessage } from './ws-error-message';
 
 export const handleMessage = async (
   ws: ServerWebSocket<WebSocketData>,
@@ -17,26 +19,20 @@ export const handleMessage = async (
   switch (message.type) {
     case 'add-existing-player':
       const newRelation: DatabasePlayerToTournament = {
-        id: `${message.body.id}=${tournamentId}`,
-        player_id: message.body.id,
+        id: `${message.id}=${tournamentId}`,
+        player_id: message.id,
         tournament_id: tournamentId,
-        wins: message.body.wins,
-        losses: message.body.losses,
-        draws: message.body.draws,
-        color_index: message.body.color_index,
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        color_index: 0,
         place: null,
+        exited: null,
       };
       try {
         await db.insert(players_to_tournaments).values(newRelation);
       } catch (e) {
-        ws.send(JSON.stringify({
-          type: 'error',
-          body: {
-            message: "couldn't add player to the tournament",
-            type: message.type,
-            body: message.body,
-          },
-        }));
+        ws.send(errorMessage("couldn't add player to the tournament", message));
       }
       break;
     case 'add-new-player':
@@ -60,18 +56,25 @@ export const handleMessage = async (
           draws: message.body.draws,
           color_index: message.body.color_index,
           place: null,
+          exited: null,
         };
         await db.insert(players_to_tournaments).values(playerToTournament);
       } catch (e) {
-        ws.send(JSON.stringify({
-          type: 'error',
-          body: {
-            message:
-              "couldn't create new player and add player to the tournament",
-            type: message.type,
-            body: message.body,
-          },
-        }));
+        ws.send(errorMessage("couldn't create new player and add player to the tournament", message));
+      }
+      break;
+    case 'remove-player':
+      try{
+      await db
+        .delete(players_to_tournaments)
+        .where(
+          and(
+            eq(players_to_tournaments.player_id, message.id),
+            eq(players_to_tournaments.tournament_id, tournamentId),
+          ),
+        );
+      } catch (e) {
+        ws.send(errorMessage("couldn't remove player-to-tournament from db", message));
       }
       break;
 

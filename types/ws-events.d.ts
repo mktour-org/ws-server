@@ -1,9 +1,9 @@
-interface Message {
-  type: MessageType;
-  body: PlayerModel;
-}
+type Message = 
+  | {type: 'add-existing-player', id: string}
+  | {type: 'add-new-player', body: PlayerModel}
+  | {type: 'remove-player', id: string}
 
-type MessageType = 'add-existing-player' | 'add-new-player';
+type MessageType = 'add-existing-player' | 'add-new-player' | 'remove-player';
 
 interface PlayerModel {
   id: string;

@@ -1,5 +1,10 @@
 import { users } from '@/lib/db/schema/auth';
-import type { Format, Result, RoundName, TournamentType } from '@/types/tournaments';
+import type {
+  Format,
+  Result,
+  RoundName,
+  TournamentType,
+} from '@/types/tournaments';
 import type { InferSelectModel } from 'drizzle-orm';
 import { int, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
@@ -73,6 +78,7 @@ export const players_to_tournaments = sqliteTable('players_to_tournaments', {
     .$default(() => 0)
     .notNull(),
   place: int('place'),
+  exited: int('exited', { mode: 'boolean' }),
 });
 
 export const games = sqliteTable('game', {
