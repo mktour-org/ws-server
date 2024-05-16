@@ -10,6 +10,7 @@ import { newid } from './utils';
 import type { WebSocketData } from '..';
 import { and, eq } from 'drizzle-orm';
 import { errorMessage } from './ws-error-message';
+import type { Message } from '@/types/ws-events';
 
 export const handleMessage = async (
   ws: ServerWebSocket<WebSocketData>,
@@ -51,10 +52,10 @@ export const handleMessage = async (
           player_id: message.body.id,
           tournament_id: tournamentId,
           id: `${message.body.id}=${tournamentId}`,
-          wins: message.body.wins,
-          losses: message.body.losses,
-          draws: message.body.draws,
-          color_index: message.body.color_index,
+          wins: 0,
+          losses: 0,
+          draws: 0,
+          color_index: 0,
           place: null,
           exited: null,
         };

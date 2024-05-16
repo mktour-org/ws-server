@@ -5,6 +5,7 @@ import { getStatusInTournament } from './lib/get-status-in-tournament';
 import { handleMessage } from './lib/handle-message';
 
 import type { Status } from './lib/get-status-in-tournament';
+import type { Message } from './types/ws-events';
 
 export interface WebSocketData {
   username: string;
