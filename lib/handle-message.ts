@@ -33,7 +33,7 @@ export const handleMessage = async (
       try {
         await db.insert(players_to_tournaments).values(newRelation);
       } catch (e) {
-        ws.send(errorMessage("couldn't add player to the tournament", message));
+        ws.send(errorMessage(message));
       }
       break;
     case 'add-new-player':
@@ -61,7 +61,7 @@ export const handleMessage = async (
         };
         await db.insert(players_to_tournaments).values(playerToTournament);
       } catch (e) {
-        ws.send(errorMessage("couldn't create new player and add player to the tournament", message));
+        ws.send(errorMessage(message));
       }
       break;
     case 'remove-player':
@@ -75,7 +75,7 @@ export const handleMessage = async (
           ),
         );
       } catch (e) {
-        ws.send(errorMessage("couldn't remove player-to-tournament from db", message));
+        ws.send(errorMessage(message));
       }
       break;
 
