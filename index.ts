@@ -6,6 +6,7 @@ import { handleMessage } from './lib/handle-message';
 
 import type { Status } from './lib/get-status-in-tournament';
 import type { Message } from './types/ws-events';
+import { errorMessage } from './lib/ws-error-message';
 
 export interface WebSocketData {
   username: string;
@@ -52,6 +53,8 @@ const server = Bun.serve<WebSocketData>({
           console.log(ws.data.tournamentId, `${ws.data.username}: ${message}`);
           ws.publish(ws.data.tournamentId, message);
           handleMessage(ws, data, ws.data.tournamentId);
+        } else {
+          ws.send(errorMessage(data));
         }
       }
     },

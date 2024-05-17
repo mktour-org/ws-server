@@ -65,15 +65,15 @@ export const handleMessage = async (
       }
       break;
     case 'remove-player':
-      try{
-      await db
-        .delete(players_to_tournaments)
-        .where(
-          and(
-            eq(players_to_tournaments.player_id, message.id),
-            eq(players_to_tournaments.tournament_id, tournamentId),
-          ),
-        );
+      try {
+        await db
+          .delete(players_to_tournaments)
+          .where(
+            and(
+              eq(players_to_tournaments.player_id, message.id),
+              eq(players_to_tournaments.tournament_id, tournamentId),
+            ),
+          );
       } catch (e) {
         ws.send(errorMessage(message));
       }
