@@ -32,6 +32,6 @@ COPY --from=prerelease /usr/src/app/ .
 
 # run the app
 USER bun
-ENV PORT 8080
-EXPOSE 8080/tcp
+ENV PORT 7070
+EXPOSE 7070/tcp
 ENTRYPOINT [ "bun", "run", "index.ts" ]

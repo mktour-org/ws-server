@@ -122,7 +122,7 @@ this is an event firing in case of substitutions in-tournament
         playerClubId
     },
     oldPlayer: {
-        playerId
+        playerId //TODO: rethink ????
     }
 }
 

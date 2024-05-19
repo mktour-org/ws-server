@@ -1,4 +1,6 @@
 import { validateRequest } from '@/lib/lucia';
+import { TLS } from './config/tls';
+
 
 interface WebSocketData {
   username: string;
@@ -7,7 +9,7 @@ interface WebSocketData {
 
 const server = Bun.serve<WebSocketData>({
   port: process.env.PORT || 7070,
-
+  tls: TLS,
   async fetch(req, server) {
     const url = new URL(req.url);
     const cookies: { [key: string]: string } = {};
@@ -36,7 +38,6 @@ const server = Bun.serve<WebSocketData>({
     },
     message(ws, message) {
       // the server re-broadcasts incoming messages to everyone;
-      console.log(message);
       console.log(ws.data.tournamentId, `${ws.data.username}: ${message}`);
       ws.publish(ws.data.tournamentId, `${ws.data.username}: ${message}`);
     },
