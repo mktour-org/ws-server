@@ -12,11 +12,18 @@ import { and, eq } from 'drizzle-orm';
 import { errorMessage } from './ws-error-message';
 import type { Message } from '@/types/ws-events';
 
+
+
+
+
 export const handleMessage = async (
   ws: ServerWebSocket<WebSocketData>,
   message: Message,
   tournamentId: string,
 ) => {
+
+
+
   switch (message.type) {
     case 'add-existing-player':
       const newRelation: DatabasePlayerToTournament = {
@@ -79,7 +86,22 @@ export const handleMessage = async (
       }
       break;
 
+    
     default:
       break;
   }
+
+  switch (message.type) {
+    case 'add-existing-player':
+    case 'add-new-player':
+    case 'remove-player':
+      console.log("generating bracket!")
+      
+
+      break;
+    
+    default:
+      break;
+  }
+
 };
