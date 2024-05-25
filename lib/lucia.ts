@@ -1,5 +1,7 @@
-import { Lucia, type Session, type User } from 'lucia';
 import { adapter } from '@/lib/lucia-adapter';
+import { Lucia } from 'lucia';
+
+import type { Session, User } from 'lucia';
 import type { DatabaseUser } from '@/lib/db/schema/auth';
 
 export const lucia = new Lucia(adapter, {
@@ -14,7 +16,7 @@ export const lucia = new Lucia(adapter, {
       name: attributes.name,
       email: attributes.email,
       rating: attributes.rating,
-      default_club: attributes.default_club,
+      selected_club: attributes.selected_club,
     };
   },
 });
