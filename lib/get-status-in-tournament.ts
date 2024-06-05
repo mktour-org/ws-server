@@ -7,7 +7,6 @@ import {
 } from './db/schema/tournaments';
 import { db } from './db';
 import { and, eq } from 'drizzle-orm';
-import { users } from './db/schema/auth';
 
 export type Status = 'organizer' | 'player' | 'viewer';
 

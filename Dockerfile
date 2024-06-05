@@ -34,4 +34,4 @@ COPY --from=prerelease /usr/src/app/ .
 USER bun
 ENV PORT 7070
 EXPOSE 7070/tcp
-ENTRYPOINT [ "bun", "run", "index.ts" ]
+ENTRYPOINT [ "bun", "start" ]
