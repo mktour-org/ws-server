@@ -1,3 +1,4 @@
+import type { GameModel } from '@/types/tournaments';
 import { db } from './db';
 import {
   players,
@@ -5,10 +6,12 @@ import {
   games,
   type DatabasePlayer,
   type DatabasePlayerToTournament,
+  tournaments,
 } from './db/schema/tournaments';
 import { eq } from 'drizzle-orm';
 
 
+const TEST_TOURNAMENT = "P9pqTDZv"
 
 
 
@@ -19,8 +22,8 @@ import { eq } from 'drizzle-orm';
  * ws.
  */
 async function generateRoundRobinRound(tournamentId: string){
-
-    const currentPlayers = await db.select().from(players_to_tournaments).where(
+    // console.log(await db.select().from(players))
+    const currentPlayers = await db.select().from(players).where(
     eq(players_to_tournaments.tournament_id, tournamentId)
     )
 
@@ -28,12 +31,29 @@ async function generateRoundRobinRound(tournamentId: string){
         eq(games.tournament_id, tournamentId)
     )
 
-    
+    console.log("current", currentPlayers);
+    // console.log("played games", gamesPlayed)
+    const newPairs = [];
+    if (gamesPlayed.length === 0) {
+      let availablePlayerPool = Array.from(currentPlayers);
+      // console.log("pool:", availablePlayerPool)
+      while (availablePlayerPool.length !== 0) {
+        const matchedPlayer = availablePlayerPool.pop()
+        const pairedPlayer = availablePlayerPool.pop();
+        const newPair = {white: pairedPlayer, black: matchedPlayer};
+        newPairs.push(newPair);
+      }
+    }
+    console.log(newPairs);
+
 }
 
 /**
  * This function generates matrix of the previous pairs 
  */
-function getPreviousGameMatrix(){
-
+function getPreviousGameMatrix(gamesPlayed: GameModel[]){
+  const playerToPlayers = new Map();
+  
 }
+
+generateRoundRobinRound(TEST_TOURNAMENT)
