@@ -1,6 +1,6 @@
 import { clubs } from '@/lib/db/schema/tournaments';
 
-import type{ InferSelectModel } from 'drizzle-orm';
+import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import { int, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const users = sqliteTable('user', {
@@ -32,3 +32,5 @@ export const sessions = sqliteTable('user_session', {
 
 export type DatabaseSession = InferSelectModel<typeof sessions>;
 export type DatabaseUser = InferSelectModel<typeof users>;
+export type InsertDatabaseSession = InferInsertModel<typeof sessions>;
+export type InsertDatabaseUser = InferInsertModel<typeof users>;

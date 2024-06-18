@@ -1,11 +1,7 @@
 import { users } from '@/lib/db/schema/auth';
-import type {
-  Format,
-  Result,
-  RoundName,
-  TournamentType,
-} from '@/types/tournaments';
-import type { InferSelectModel } from 'drizzle-orm';
+
+import type { Format, Result, RoundName, TournamentType } from '@/types/tournaments';
+import { type InferInsertModel, type InferSelectModel, relations } from 'drizzle-orm';
 import { int, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const players = sqliteTable('player', {
@@ -28,20 +24,22 @@ export const tournaments = sqliteTable('tournament', {
   format: text('format').$type<Format>().notNull(),
   type: text('type').$type<TournamentType>().notNull(),
   date: text('date').notNull(),
-  created_at: integer('created_at').notNull(),
+  created_at: integer('created_at', { mode: 'timestamp' }).notNull(),
   club_id: text('club_id')
     .references(() => clubs.id)
     .notNull(),
-  started_at: integer('started_at'),
-  closed_at: integer('closed_at'),
+  started_at: integer('started_at', { mode: 'timestamp' }),
+  closed_at: integer('closed_at', { mode: 'timestamp' }),
   rounds_number: integer('rounds_number'), // necessary even if playing single elimination (final and match_for_third have same number);
   ongoing_round: integer('ongoing_round'),
+  rated: integer('rated', { mode: 'boolean' }),
 });
 
 export const clubs = sqliteTable('club', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
-  created_at: integer('created_at'),
+  description: text('description'),
+  created_at: integer('created_at', { mode: 'timestamp' }),
   lichess_team: text('lichess_team'),
 });
 
@@ -99,12 +97,52 @@ export const games = sqliteTable('game', {
     .notNull(),
 });
 
+export const clubs_relations = relations(clubs, ({ many }) => ({
+  tournaments: many(tournaments),
+  players: many(players),
+}));
+
+export const players_relations = relations(players, ({ one, many }) => ({
+  club: one(clubs, { fields: [players.club_id], references: [clubs.id] }),
+  tournaments: many(players_to_tournaments),
+}));
+
+export const tournaments_relations = relations(
+  tournaments,
+  ({ one, many }) => ({
+    club: one(clubs, { fields: [tournaments.club_id], references: [clubs.id] }),
+    players: many(players_to_tournaments),
+  }),
+);
+
+export const players_to_tournaments_relations = relations(
+  players_to_tournaments,
+  ({ one }) => ({
+    player: one(players, {
+      fields: [players_to_tournaments.player_id],
+      references: [players.id],
+    }),
+    tournament: one(tournaments, {
+      fields: [players_to_tournaments.tournament_id],
+      references: [tournaments.id],
+    }),
+  }),
+);
+
 export type DatabasePlayer = InferSelectModel<typeof players>;
 export type DatabaseTournament = InferSelectModel<typeof tournaments>;
 export type DatabaseClub = InferSelectModel<typeof clubs>;
 export type DatabaseClubsToUsers = InferSelectModel<typeof clubs_to_users>;
 export type DatabaseGame = InferSelectModel<typeof games>;
 export type DatabasePlayerToTournament = InferSelectModel<
+  typeof players_to_tournaments
+>;
+export type InsertDatabasePlayer = InferInsertModel<typeof players>;
+export type InsertDatabaseTournament = InferInsertModel<typeof tournaments>;
+export type InsertDatabaseClub = InferInsertModel<typeof clubs>;
+export type InsertDatabaseClubsToUsers = InferInsertModel<typeof clubs_to_users>;
+export type InsertDatabaseGame = InferInsertModel<typeof games>;
+export type InsertDatabasePlayerToTournament = InferInsertModel<
   typeof players_to_tournaments
 >;
 export type StatusInClub = 'admin' | 'moderator';

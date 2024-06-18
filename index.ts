@@ -2,7 +2,6 @@ import { validateRequest } from '@/lib/lucia';
 
 import { TLS } from './lib/config/tls';
 import { getStatusInTournament } from './lib/get-status-in-tournament';
-import { handleMessage } from './lib/handle-message';
 
 import type { Status } from './lib/get-status-in-tournament';
 import type { Message } from './types/ws-events';
@@ -52,7 +51,6 @@ const server = Bun.serve<WebSocketData>({
         if (ws.data.status === 'organizer') {
           console.log(ws.data.tournamentId, `${ws.data.username}: ${message}`);
           ws.publish(ws.data.tournamentId, message);
-          handleMessage(ws, data, ws.data.tournamentId);
         } else {
           ws.send(errorMessage(data));
         }
