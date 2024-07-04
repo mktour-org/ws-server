@@ -35,6 +35,11 @@ interface MatchedEntity {
 type PossibleMatches = Set<MatchedEntity>;
 
 
+/**
+ * This type is representing the bootstrapping material for the map of possible player pools
+ */
+type EntityIdPoolPair = [MatchedEntity["entityId"], PossibleMatches]
+
 interface ColouredEntitiesPair {
   whiteId: string,
   blackId: string
@@ -62,13 +67,39 @@ async function constructNewGame() {
  */
 async function getInitialEntitiesIdPairs(matchedEntities: Set<MatchedEntity>) {
 
-  const initialEntitiesIdPairs = matchedEntities.map(
+  // initializing a bootstrapping array
+  const initialEntitiesIdPairs: EntityIdPoolPair[] = [];
+
+  // filling the bootstrapping array here
+  matchedEntities.forEach(
+    /**
+     * This function is taking the matched entity, forms a copy of a big set of players, then removes the current entity from a 
+     * pool. Then it just forms a pair of values (this is a map bootstrap, remember?) and updates the outer array
+     * @param matchedEntity 
+     */
     (matchedEntity: MatchedEntity) => {
-      const matchedEntitiesWithoutCurrent = matchedEntities.
-      const poolIdPair = [matchedEntity.entityId, ]
+      const matchedEntitiesPool = new Set(matchedEntities);
+      matchedEntitiesPool.delete(matchedEntity);
+      
+      const poolIdPair: EntityIdPoolPair = [matchedEntity.entityId, matchedEntitiesPool];
+
+      initialEntitiesIdPairs.push(poolIdPair);
     }
   )
 
+  return initialEntitiesIdPairs;
+}
+
+/**
+ * This simple converter is a facet of our big matching routine system
+ * @param playerToTournament database player to tournament scheme
+ */
+async function convertPlayerToTournamentToEntity(playerToTournament: DatabasePlayerToTournament) {
+  const matchedEntity: MatchedEntity = {
+    entityId: playerToTournament.player_id
+  }
+  
+  return matchedEntity
 }
 
 /**
@@ -87,6 +118,12 @@ async function generateRoundRobinRound(tournamentId: string){
     const gamesPlayed = await db.select().from(games).where(
         eq(games.tournament_id, tournamentId)
     );
+
+
+    // converting the database specific players model to the agnostic one
+    const matchedRoundRobinEntities = Promise.all(currentPlayers.map(convertPlayerToTournamentToEntity));
+
+    const initialEntitiesPools = getInitialEntitiesIdPairs(matchedRoundRobinEntities);
 
     const initialMatchesById = new Map();
 
