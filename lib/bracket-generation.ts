@@ -32,7 +32,7 @@ interface MatchedEntity {
 /**
  * This is a set of a possible opponents, by entities' ids
  */
-type PossibleMatches = Set<MatchedEntity>;
+type PossibleMatches = Set<MatchedEntity>
 
 
 /**
@@ -159,34 +159,8 @@ function generateRRPairs(playerPool: DatabasePlayerToTournament[], playerToPossi
 
 }
 
-/**
- * This function generates a player-pair to false map, for usage in round robin matching later.
- * @param playerToTournamentPool a list of players in the torunament
- * @returns a map-like which maps every possible players pair to false
- */
-function getInitialPlayerPools( playerToTournamentPool: DatabasePlayerToTournament[]): WasPlayedByPairs{
-  const pairPlayedStatus: WasPlayedByPairs = new Map();
 
 
-  const allPossiblePairs = playerToTournamentPool.flatMap(
-    (playerToTournament, playerIdx) => { 
-      let playerPoolWithoutPreviousPlayers = playerToTournamentPool.slice(playerIdx+1);
-      const pairsPerPlayer = playerPoolWithoutPreviousPlayers.map(
-         (possibleOpponent) => {
-          const possiblePair: PlayerIdPair = [playerToTournament.player_id, possibleOpponent.player_id];
-          return possiblePair;
-         } )
-      return pairsPerPlayer
-    }
-  );
-
-
-  allPossiblePairs.forEach(
-    (playerPair) => pairPlayedStatus.set(playerPair, false)
-  );
-
-  return pairPlayedStatus;
-}
 
 /**
  * This function gets the initial (or not) matched pools by id maps, which should show the possible opponent-entities for each entity 
@@ -195,13 +169,12 @@ function getInitialPlayerPools( playerToTournamentPool: DatabasePlayerToTourname
  * @param gamesPlayed a list of games
  * @returns the wasPlayed initial one, but with recorded games in it
  */
-function updateEntitiesMatches(poolById: Mat, gamesPlayed: DatabaseGame[]) {
+function updateEntitiesMatches(poolById: PoolById, gamesPlayed: DatabaseGame[], ) {
   
   gamesPlayed.forEach(
     (gamePlayed) => {
-      const {white_id: firstPlayer , black_id: secondPlayer } = gamePlayed;
-      const playedPair: PlayerIdPair = [firstPlayer, secondPlayer];
-      poolById.set(playedPair, true);  
+      const {white_id, black_id } = gamePlayed;
+      const whiteEntity = 
     }
   )
 
