@@ -46,6 +46,11 @@ interface ColouredEntitiesPair {
 }
 
 
+interface ExpandedPlayerToTournament {
+  player: DatabasePlayer;
+  players_to_tournaments: DatabasePlayerToTournament;
+}
+
 /**
  * This is a map-like which maps every entity id to a set of possible matches for it
  */
@@ -108,26 +113,41 @@ async function convertPlayerToTournamentToEntity(playerToTournament: DatabasePla
  * ws.
  */
 async function generateRoundRobinRound(tournamentId: string){
-    // getting the players pool in the tournmament
-    const currentPlayers = await db.select().from(players_to_tournaments).where(
-    eq(players_to_tournaments.tournament_id, tournamentId)
-    );
+    // getting the players to tournaments
+    const allPlayersToTournaments = db.select().from(players_to_tournaments);
+    
+    // taking only those who are in the current tournament
+    const tournamentPlayersToTournaments = allPlayersToTournaments.where(
+      eq(players_to_tournaments.tournament_id, tournamentId)
+      );
+  
+    // joining the player infromation for every ptt record
+    const tournamentPlayersToTournamentsDetailed: ExpandedPlayerToTournament[] = await tournamentPlayersToTournaments.innerJoin(players, 
+      eq(players.id,
+         players_to_tournaments.player_id
+        )
+      );
+    
+
 
     // getting the played games list
-    const gamesPlayed = await db.select().from(games).where(
+    const allGames = db.select().from(games);
+    const tournamentGames = allGames.where(
         eq(games.tournament_id, tournamentId)
     );
+    // TODO: add the game updating mechanism
 
 
-    // converting the database specific players model to the agnostic one, and resolve all the promises
-    const matchedRoundRobinEntitiesPromises = currentPlayers.map(convertPlayerToTournamentToEntity);
-    const matchedRoundRobinEntities = await Promise.all(matchedRoundRobinEntitiesPromises)
 
-    // getting the bootstrap for the map, initially for all the players the pools are the same
-    const initialEntitiesPools = await getInitialEntitiesIdPairs(matchedRoundRobinEntities);
-    const poolById: PoolById = new Map(initialEntitiesPools);
+    // // converting the database specific players model to the agnostic one, and resolve all the promises
+    // const matchedRoundRobinEntitiesPromises = currentPlayers.map(convertPlayerToTournamentToEntity);
+    // const matchedRoundRobinEntities = await Promise.all(matchedRoundRobinEntitiesPromises)
 
-    const poolByIdUpdated = updateEntitiesMatches(poolById, gamesPlayed);
+    // // getting the bootstrap for the map, initially for all the players the pools are the same
+    // const initialEntitiesPools = await getInitialEntitiesIdPairs(matchedRoundRobinEntities);
+    // const poolById: PoolById = new Map(initialEntitiesPools);
+
+    // // const poolByIdUpdated = updateEntitiesMatches(poolById, gamesPlayed);
 
     
 
@@ -140,7 +160,7 @@ async function generateRoundRobinRound(tournamentId: string){
  * @param playerPool always EVEN set of players
  * @param gamesPlayed the list of games
  */
-function generateRRPairs(playerPool: DatabasePlayerToTournament[], playerToPossiblePool): MatchedPlayers[] {
+function generateRoundRobinPairs(playerPool: DatabasePlayerToTournament[], playerToPossiblePool): MatchedPlayers[] {
 
   const generatedPairs = [];
   if (gamesPlayed.length === 0) {
@@ -174,7 +194,7 @@ function updateEntitiesMatches(poolById: PoolById, gamesPlayed: DatabaseGame[], 
   gamesPlayed.forEach(
     (gamePlayed) => {
       const {white_id, black_id } = gamePlayed;
-      const whiteEntity = 
+      let whiteEntity;
     }
   )
 
