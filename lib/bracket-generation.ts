@@ -25,25 +25,31 @@ interface ChessColouredMatchedPlayers {
 /** 
  * The type representing entities we are matching inside our algorithms 
  * */
-interface TournamentEntity { 
-  entityId: string
+interface ChessTournamentEntity { 
+  entityId: string;
+  colourIndex: number;
 }
 
 /**
  * This is a set of a possible opponents, by entities' ids
  */
-type PossibleMatches = Set<TournamentEntity>
+type PossibleMatches = Set<ChessTournamentEntity>
 
 
 /**
  * This type is representing the bootstrapping material for the map of possible player pools
  */
-type EntityIdPoolPair = [TournamentEntity["entityId"], PossibleMatches]
+type EntityIdPoolPair = [ChessTournamentEntity["entityId"], PossibleMatches]
 
 interface ColouredEntitiesPair {
   whiteId: string,
   blackId: string
 }
+
+/**
+ * First generated type of a round is just a pair of two entities
+ */
+type EntitiesPair = [ChessTournamentEntity, ChessTournamentEntity];
 
 /**
  * Entity combining both the player general info and player tournament information
@@ -56,7 +62,7 @@ interface PlayerAndPtt {
 /**
  * This is a map-like which maps every entity id to a set of possible matches for it
  */
-type PoolById = Map<TournamentEntity["entityId"], PossibleMatches>
+type PoolById = Map<ChessTournamentEntity["entityId"], PossibleMatches>
 
 
 /**
@@ -72,7 +78,7 @@ async function constructNewGame() {
  * This is done to have a bootstrap for mapping entities to the possible opponents for the round.
  * @param matchedEntities list with entities-like objects
  */
-async function getInitialEntitiesIdPairs(matchedEntities: TournamentEntity[]) {
+async function getInitialEntitiesIdPairs(matchedEntities: ChessTournamentEntity[]) {
 
   // initializing a bootstrapping array
   const initialEntitiesIdPairs: EntityIdPoolPair[] = [];
@@ -84,7 +90,7 @@ async function getInitialEntitiesIdPairs(matchedEntities: TournamentEntity[]) {
      * pool. Then it just forms a pair of values (this is a map bootstrap, remember?) and updates the outer array
      * @param matchedEntity 
      */
-    (matchedEntity: TournamentEntity) => {
+    (matchedEntity: ChessTournamentEntity) => {
       const matchedEntitiesPool = new Set(matchedEntities);
       matchedEntitiesPool.delete(matchedEntity);
       
@@ -102,8 +108,9 @@ async function getInitialEntitiesIdPairs(matchedEntities: TournamentEntity[]) {
  * @param playerAndPtt a joined representation of player 
  */
 async function convertPlayerToEntity(playerAndPtt: PlayerAndPtt) {
-  const tournamentEntity: TournamentEntity = {
-    entityId: playerAndPtt.player.id
+  const tournamentEntity: ChessTournamentEntity = {
+    entityId: playerAndPtt.player.id,
+    colourIndex: playerAndPtt.players_to_tournaments.color_index
   };
   return tournamentEntity;
 }
@@ -150,33 +157,50 @@ async function generateRoundRobinRound(tournamentId: string){
     // const poolById: PoolById = new Map(initialEntitiesPools);
     // // const poolByIdUpdated = updateEntitiesMatches(poolById, gamesPlayed);
 
+    const entitiesMatchingsGenerated = await generateRoundRobinPairs(matchedEntities, tournamentGames);
     
+
 
 }
 
+/**
+ * This function takes a list of pairs and colours them according to their colour index
+ * @param uncolouredPairs this is a list like of uncoloured pairs of entities
+ */
+async function makeColouredPairs(uncolouredPairs: EntitiesPair[]) {
+
+}
 
 /**
  * This function takes an entities pool constructs a list of possible pairs of those
  * @param playerPool always EVEN set of players
- * @param gamesPlayed the list of games
+ * @param gamesPlayed the list of games played in tournament
  */
-function generateRoundRobinPairs(evenEntitiesPool: TournamentEntity[], previousGames: DatabaseGame[]) {
+async function generateRoundRobinPairs(evenEntitiesPool: ChessTournamentEntity[], previousGames: DatabaseGame[]) {
 
   const generatedPairs = [];
+
+  // if there is no games, we just straightforwardly generate a list of games
   if (previousGames.length === 0) {
-    let availablePlayerPool = playerPool;
-    while (availablePlayerPool.length !== 0) {
-      const randomPlayer = availablePlayerPool.pop();
-      const pairedPlayer = availablePlayerPool.pop();
-      const generatedPair: MatchedPlayers =  {
-        firstPlayer: randomPlayer,
-        secondPlayer: pairedPlayer
-      };
+
+    // creating a copy for dynamic programming way of constructing pairs
+    const remainingEntitiesPool = Array.from(evenEntitiesPool);
+
+    // until the pool is not zero, we continue slicing it
+    while (remainingEntitiesPool.length !== 0) {
+
+      // it is guaranteed that it will be even, and thus we use a type guards here
+      const firstEntity = remainingEntitiesPool.pop() as ChessTournamentEntity;
+      const secondEntity = remainingEntitiesPool.pop() as ChessTournamentEntity;
+
+
+      // generating a new pair 
+      const generatedPair: EntitiesPair = [firstEntity, secondEntity];
+      generatedPairs.push(generatedPair);
     }
   }
-  console.log(newGames);
 
-
+  return generatedPairs;
 }
 
 
