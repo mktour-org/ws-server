@@ -42,8 +42,8 @@ type PossibleMatches = Set<ChessTournamentEntity>
 type EntityIdPoolPair = [ChessTournamentEntity["entityId"], PossibleMatches]
 
 interface ColouredEntitiesPair {
-  whiteId: string,
-  blackId: string
+  whiteEntity: ChessTournamentEntity,
+  blackEntity: ChessTournamentEntity
 }
 
 /**
@@ -163,12 +163,24 @@ async function generateRoundRobinRound(tournamentId: string){
 
 }
 
-/**
- * This function takes a list of pairs and colours them according to their colour index
- * @param uncolouredPairs this is a list like of uncoloured pairs of entities
- */
-async function makeColouredPairs(uncolouredPairs: EntitiesPair[]) {
 
+/**
+ * This function gets a pair, and colours it according to the colour index
+ * @param uncolouredPair the pair of two entities, array like
+ * @returns a promise of a coloured pair object
+ */
+async function getColouredPair(uncolouredPair: EntitiesPair): Promise<ColouredEntitiesPair>{
+  let [whiteEntity, blackEntity] = uncolouredPair;
+  
+  // reversing the white and black, if the white colour index is bigger 
+  // (that means that current white has played more whites, than black player)
+  if (whiteEntity.colourIndex > blackEntity.colourIndex) {
+    [whiteEntity, blackEntity] = [blackEntity, whiteEntity];
+    
+  } 
+  const colouredPair: ColouredEntitiesPair = {whiteEntity, blackEntity};
+
+  return colouredPair;
 }
 
 /**
