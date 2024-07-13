@@ -40,9 +40,16 @@ type PossibleMatches = Set<ChessTournamentEntity>;
  */
 type EntityIdPoolPair = [ChessTournamentEntity['entityId'], PossibleMatches];
 
+/**
+ * This interface is representing an entiies pair, which is already has colour in it
+ */
 interface ColouredEntitiesPair {
   whiteEntity: ChessTournamentEntity;
   blackEntity: ChessTournamentEntity;
+}
+
+interface NumberedEntitiesPair extends ColouredEntitiesPair {
+  pairNumber: number;
 }
 
 /**
@@ -162,6 +169,22 @@ async function generateRoundRobinRound(tournamentId: string) {
   const colouredMatchesPromises =
     entitiesMatchingsGenerated.map(getColouredPair);
   const colouredMatches = await Promise.all(colouredMatchesPromises);
+}
+
+/**
+ * This function gets a coloured entities pair, and assigns them a provided number, judging by the offset. 
+ * @param colouredPair a coloured pair
+ * @param pairNumber a number to number a pair with
+ * @param offset an offset, which is being added to provided pair number
+ */
+async function getNumberedPair(
+  colouredPair: ColouredEntitiesPair,
+  pairNumber: number,
+  offset: number = 0
+): Promise<NumberedEntitiesPair>{
+  const pairNumberOffseted = pairNumber + offset;
+  
+  const numberedPair = Object.assign(colouredPair, pairNumberOffseted);
 }
 
 /**
