@@ -53,6 +53,11 @@ interface NumberedEntitiesPair extends ColouredEntitiesPair {
 }
 
 /**
+ * This is a generic type, which selects only unique properties of `Child`
+ */
+type OnlyChild<Child, Parent> = Omit<Child, keyof Parent>;
+
+/**
  * First generated type of a round is just a pair of two entities
  */
 type EntitiesPair = [ChessTournamentEntity, ChessTournamentEntity];
@@ -73,7 +78,7 @@ type PoolById = Map<ChessTournamentEntity['entityId'], PossibleMatches>;
 /**
  * This function gets a pair of players, and returns a game, which is ready to be fed to drizzle
  */
-async function constructNewGame() {}
+async function constructDatabaseGame() {}
 
 /**
  * This function gets a list of entities, and populates it as a list of pairs of entity id, to the whole list excluding this entity.
@@ -169,6 +174,14 @@ async function generateRoundRobinRound(tournamentId: string) {
   const colouredMatchesPromises =
     entitiesMatchingsGenerated.map(getColouredPair);
   const colouredMatches = await Promise.all(colouredMatchesPromises);
+
+
+  const currentOffset = tournamentGames.length;
+  const numberedMatchesPromises = colouredMatches.map(
+    (colouredMatch, coulouredMatchIndex) => getNumberedPair(colouredMatch, coulouredMatchIndex, currentOffset)
+  );
+
+
 }
 
 /**
@@ -182,10 +195,19 @@ async function getNumberedPair(
   pairNumber: number,
   offset: number = 0
 ): Promise<NumberedEntitiesPair>{
+
+  // getting the number offset of a current pair
   const pairNumberOffseted = pairNumber + offset;
+
+  // constructing the additional properties of numbered pair
+  const partialNumberedPair: OnlyChild<NumberedEntitiesPair, ColouredEntitiesPair> = {pairNumber: pairNumberOffseted}
+
+  // merging coloured ones, and the new ones together
+  const numberedPair: NumberedEntitiesPair = Object.assign(partialNumberedPair, colouredPair);
   
-  const numberedPair = Object.assign(colouredPair, pairNumberOffseted);
-}
+  return numberedPair;
+};
+
 
 /**
  * This function gets a pair, and colours it according to the colour index
