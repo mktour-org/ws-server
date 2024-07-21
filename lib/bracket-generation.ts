@@ -181,6 +181,9 @@ async function generateRoundRobinRound(tournamentId: string) {
     (colouredMatch, coulouredMatchIndex) => getNumberedPair(colouredMatch, coulouredMatchIndex, currentOffset)
   );
 
+  const numberedMatches = await Promise.all(numberedMatchesPromises);
+
+
 
 }
 
