@@ -1,4 +1,4 @@
-import type { GameModel } from '@/types/tournaments';
+import type { GameModel, Result } from '@/types/tournaments';
 import { db } from './db';
 import {
   players,
@@ -8,10 +8,14 @@ import {
   type DatabasePlayerToTournament,
   tournaments,
   type DatabaseGame,
+  type InsertDatabaseGame,
 } from './db/schema/tournaments';
 import { eq } from 'drizzle-orm';
+import { newid } from './utils';
 
 const TEST_TOURNAMENT = 'P9pqTDZv';
+const TEST_ROUND_NUMBER = 0;
+
 
 /**
  * This is a chess players pair with colours assigned
@@ -133,7 +137,7 @@ async function convertPlayerToEntity(playerAndPtt: PlayerAndPtt) {
  * By using that information, it returns the new games list, which are then published to the respective
  * ws.
  */
-async function generateRoundRobinRound(tournamentId: string) {
+async function generateRoundRobinRound(tournamentId: string, roundNumber: number) {
   // getting the players to tournaments
   const allPlayersToTournaments = db.select().from(players_to_tournaments);
 
@@ -184,7 +188,31 @@ async function generateRoundRobinRound(tournamentId: string) {
   const numberedMatches = await Promise.all(numberedMatchesPromises);
 
 
+  const gameToInsertPromises = numberedMatches.map(
+    (numberedMatch) => getGameToInsert(numberedMatch, tournamentId, roundNumber)
+  )
+  const gamesToInsert = await Promise.all(gameToInsertPromises);
 
+  console.log(tournamentGames);
+  // await db.insert(games).values(gamesToInsert);
+}
+
+async function getGameToInsert(numberedMatch: NumberedEntitiesPair, tournamentId: string, roundNumber: number): Promise<InsertDatabaseGame> {
+    const gameId = newid();
+    const whiteId = numberedMatch.whiteEntity.entityId;
+    const blackId = numberedMatch.blackEntity.entityId;
+    const gameToInsert: InsertDatabaseGame = {
+      id: gameId,
+      white_id: whiteId,
+      black_id: blackId,
+      tournament_id: tournamentId,
+      round_number: roundNumber,
+      round_name: null,
+      white_prev_game_id: null,
+      black_prev_game_id: null,
+      result: null
+    }
+    return gameToInsert
 }
 
 /**
@@ -287,4 +315,5 @@ function updateEntitiesMatches(
   return poolById;
 }
 
-generateRoundRobinRound(TEST_TOURNAMENT);
+
+generateRoundRobinRound(TEST_TOURNAMENT, TEST_ROUND_NUMBER);
