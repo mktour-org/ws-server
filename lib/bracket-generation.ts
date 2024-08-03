@@ -37,7 +37,7 @@ interface ChessTournamentEntity {
 /**
  * This is a set of a possible opponents, by entities' ids
  */
-type PossibleMatches = Set<ChessTournamentEntity>;
+type PossibleMatches = Set<ChessTournamentEntity['entityId']>;
 
 /**
  * This type is representing the bootstrapping material for the map of possible player pools
@@ -79,10 +79,6 @@ interface PlayerAndPtt {
  */
 type PoolById = Map<ChessTournamentEntity['entityId'], PossibleMatches>;
 
-/**
- * This function gets a pair of players, and returns a game, which is ready to be fed to drizzle
- */
-async function constructDatabaseGame() {}
 
 /**
  * This function gets a list of entities, and populates it as a list of pairs of entity id, to the whole list excluding this entity.
@@ -95,6 +91,11 @@ async function getInitialEntitiesIdPairs(
   // initializing a bootstrapping array
   const initialEntitiesIdPairs: EntityIdPoolPair[] = [];
 
+  // getting a list of an entities ids only, because it's the only useful information for matching here
+  const matchEntitiesIds: ChessTournamentEntity["entityId"][] = matchedEntities.map(
+    (matchedEntity) => matchedEntity.entityId
+  );
+
   // filling the bootstrapping array here
   matchedEntities.forEach(
     /**
@@ -103,8 +104,8 @@ async function getInitialEntitiesIdPairs(
      * @param matchedEntity
      */
     (matchedEntity: ChessTournamentEntity) => {
-      const matchedEntitiesPool = new Set(matchedEntities);
-      matchedEntitiesPool.delete(matchedEntity);
+      const matchedEntitiesPool = new Set(matchEntitiesIds);
+      matchedEntitiesPool.delete(matchedEntity.entityId);
 
       const poolIdPair: EntityIdPoolPair = [
         matchedEntity.entityId,
@@ -166,11 +167,13 @@ async function generateRoundRobinRound(tournamentId: string, roundNumber: number
   );
   const matchedEntities = await Promise.all(matchedEntitiesPromises);
 
-  // // getting the bootstrap for the map, initially for all the players the pools are the same
-  // const initialEntitiesPools = await getInitialEntitiesIdPairs(matchedRoundRobinEntities);
-  // const poolById: PoolById = new Map(initialEntitiesPools);
-  // // const poolByIdUpdated = updateEntitiesMatches(poolById, gamesPlayed);
+  // getting the bootstrap for the map, initially for all the players the pools are the same
+  const initialEntitiesPools = await getInitialEntitiesIdPairs(matchedEntities);
+  const poolById: PoolById = new Map(initialEntitiesPools);
+  const poolByIdUpdated = updateChessEntitiesMatches(poolById, tournamentGames);
 
+
+  console.log( poolByIdUpdated)
   const entitiesMatchingsGenerated = await generateRoundRobinPairs(
     matchedEntities,
     tournamentGames,
@@ -193,7 +196,7 @@ async function generateRoundRobinRound(tournamentId: string, roundNumber: number
   )
   const gamesToInsert = await Promise.all(gameToInsertPromises);
 
-  console.log(tournamentGames);
+  // console.log(tournamentGames);
   // await db.insert(games).values(gamesToInsert);
 }
 
@@ -267,30 +270,28 @@ async function getColouredPair(
 
 /**
  * This function takes an entities pool constructs a list of possible pairs of those
- * @param playerPool always EVEN set of players
- * @param gamesPlayed the list of games played in tournament
+ * @param poolById always EVEN set of players
  */
 async function generateRoundRobinPairs(
-  evenEntitiesPool: ChessTournamentEntity[],
-  previousGames: DatabaseGame[],
+  poolById: PoolById
 ) {
   const generatedPairs = [];
+  
+  const entitiesIdIterator = poolById.keys();
+  const entitiesIds = Array.from(entitiesIdIterator);
 
-  // if there is no games, we just straightforwardly generate a list of games
-  if (previousGames.length === 0) {
-    // creating a copy for dynamic programming way of constructing pairs
-    const remainingEntitiesPool = Array.from(evenEntitiesPool);
+  // creating a copy for dynamic programming way of constructing pairs
+  const remainingEntitiesPool = Array.from);
 
-    // until the pool is not zero, we continue slicing it
-    while (remainingEntitiesPool.length !== 0) {
-      // it is guaranteed that it will be even, and thus we use a type guards here
-      const firstEntity = remainingEntitiesPool.pop() as ChessTournamentEntity;
-      const secondEntity = remainingEntitiesPool.pop() as ChessTournamentEntity;
+  // until the pool is not zero, we continue slicing it
+  while (remainingEntitiesPool.length !== 0) {
+    // it is guaranteed that it will be even, and thus we use a type guards here
+    const firstEntity = remainingEntitiesPool.pop() as ChessTournamentEntity;
+    const secondEntity = remainingEntitiesPool.pop() as ChessTournamentEntity;
 
-      // generating a new pair
-      const generatedPair: EntitiesPair = [firstEntity, secondEntity];
-      generatedPairs.push(generatedPair);
-    }
+    // generating a new pair
+    const generatedPair: EntitiesPair = [firstEntity, secondEntity];
+    generatedPairs.push(generatedPair);
   }
 
   return generatedPairs;
@@ -299,17 +300,24 @@ async function generateRoundRobinPairs(
 /**
  * This function gets the initial (or not) matched pools by id maps, which should show the possible opponent-entities for each entity
  * It also gets list of the games, by which the possible remained matches are being recorded
+ * It returns the pools without already matched pairs, dual sided -- chess style
  * @param poolById  map-like which is recording which player pair played already
  * @param gamesPlayed a list of games
  * @returns the wasPlayed initial one, but with recorded games in it
  */
-function updateEntitiesMatches(
+function updateChessEntitiesMatches(
   poolById: PoolById,
   gamesPlayed: DatabaseGame[],
 ) {
-  gamesPlayed.forEach((gamePlayed) => {
-    const { white_id, black_id } = gamePlayed;
-    let whiteEntity;
+
+  // for every game we get the pair, and delete respective entry from each of the two pools of the possible
+  // players
+  gamesPlayed.forEach((chessGamePlayed) => {
+    const { white_id: whiteId, black_id: blackId } = chessGamePlayed;
+    const whitePool = poolById.get(whiteId);
+    whitePool?.delete(blackId);
+    const blackPool = poolById.get(blackId);
+    blackPool?.delete(whiteId);
   });
 
   return poolById;
