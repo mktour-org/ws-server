@@ -10,8 +10,9 @@ import {
   type DatabaseGame,
   type InsertDatabaseGame,
 } from './db/schema/tournaments';
-import { eq } from 'drizzle-orm';
+import { eq, or, and, aliasedTable} from 'drizzle-orm';
 import { newid } from './utils';
+
 
 const TEST_TOURNAMENT = 'P9pqTDZv';
 const TEST_ROUND_NUMBER = 0;
@@ -132,6 +133,9 @@ async function convertPlayerToEntity(playerAndPtt: PlayerAndPtt) {
   return tournamentEntity;
 }
 
+
+async function convertGameToEntitiesMatch(){}
+
 /**
  * This function purposefully generates the bracket round for the round robin tournament. It gets the
  * tournamentId, checks the query for the current list of players, and  gets the games played by them.
@@ -148,17 +152,47 @@ async function generateRoundRobinRound(tournamentId: string, roundNumber: number
   );
 
   // joining the player infromation for every ptt record
-  const tournamentPlayersDetailed: PlayerAndPtt[] =
-    await tournamentPlayersToTournaments.innerJoin(
+  const tournamentPlayersDetailed: PlayerAndPtt[] = await
+    tournamentPlayersToTournaments.innerJoin(
       players,
       eq(players.id, players_to_tournaments.player_id),
     );
 
   // getting the played games list
   const allGames = db.select().from(games);
-  const tournamentGames = await allGames.where(
+  const tournamentGamesQuery = allGames.where(
     eq(games.tournament_id, tournamentId),
   );
+
+  const blackPlayers = aliasedTable(players, "black_player");
+  const whitePlayers = aliasedTable(players, "white_player");
+
+
+  const tournamentGamesWithPlayers = tournamentGamesQuery.innerJoin(
+    blackPlayers,
+    eq(blackPlayers.id, games.black_id)
+  ).innerJoin(
+    whitePlayers,
+    eq(whitePlayers.id, games.white_id)
+  )
+
+  const blackPTT = aliasedTable(players_to_tournaments, "black_ptt");
+  const whitePTT = aliasedTable(players_to_tournaments, "white_ptt");
+
+  const detailedTournamentGames = await tournamentGamesQuery.innerJoin(
+    blackPlayers,
+    eq(blackPlayers.id, games.black_id)
+  ).innerJoin(
+    whitePlayers,
+    eq(whitePlayers.id, games.white_id)
+  ).innerJoin(
+    whitePTT, 
+    and(eq(games.white_id, whitePTT.player_id), eq(whitePTT.tournament_id, tournamentId))
+  ).innerJoin(
+    blackPTT,
+    and(eq(games.white_id, blackPTT.player_id), eq(blackPTT.tournament_id, tournamentId))
+  )
+
   // TODO: add the game updating mechanism
 
   // converting the database specific players model to the agnostic one, and resolve all the promises
@@ -167,13 +201,13 @@ async function generateRoundRobinRound(tournamentId: string, roundNumber: number
   );
   const matchedEntities = await Promise.all(matchedEntitiesPromises);
 
+
   // getting the bootstrap for the map, initially for all the players the pools are the same
   const initialEntitiesPools = await getInitialEntitiesIdPairs(matchedEntities);
   const poolById: PoolById = new Map(initialEntitiesPools);
   const poolByIdUpdated = updateChessEntitiesMatches(poolById, tournamentGames);
 
 
-  console.log( poolByIdUpdated)
   const entitiesMatchingsGenerated = await generateRoundRobinPairs(
     matchedEntities,
     tournamentGames,
@@ -200,22 +234,37 @@ async function generateRoundRobinRound(tournamentId: string, roundNumber: number
   // await db.insert(games).values(gamesToInsert);
 }
 
-async function getGameToInsert(numberedMatch: NumberedEntitiesPair, tournamentId: string, roundNumber: number): Promise<InsertDatabaseGame> {
-    const gameId = newid();
-    const whiteId = numberedMatch.whiteEntity.entityId;
-    const blackId = numberedMatch.blackEntity.entityId;
-    const gameToInsert: InsertDatabaseGame = {
-      id: gameId,
-      white_id: whiteId,
-      black_id: blackId,
-      tournament_id: tournamentId,
-      round_number: roundNumber,
-      round_name: null,
-      white_prev_game_id: null,
-      black_prev_game_id: null,
-      result: null
-    }
-    return gameToInsert
+/**
+ * This function by the finalized numbered match generates an entry for the drizzle database game
+ * @param finalizedMatch finalized match, ready to be fed to the 
+ * @param tournamentId stringlike id of the tournament, needs to be in the game obj
+ * @param roundNumber same motivation as for the tournament id, a number, showing what round a game will be played 
+ * @returns a game to be inserted to drizzle
+ */
+async function getGameToInsert(finalizedMatch: NumberedEntitiesPair, tournamentId: string, roundNumber: number): Promise<InsertDatabaseGame> {
+    
+
+  // generating new id for the game
+  const gameId = newid();
+
+  // conversion to the game format 
+  const whiteId = finalizedMatch.whiteEntity.entityId;
+  const blackId = finalizedMatch.blackEntity.entityId;
+
+  const gameToInsert: InsertDatabaseGame = {
+    id: gameId,
+    white_id: whiteId,
+    black_id: blackId,
+    tournament_id: tournamentId,
+    round_number: roundNumber,
+
+    // all those fields are set to null here, maybe will rethink that later
+    round_name: null, // TODO: can be equal to round number in R&R 
+    white_prev_game_id: null, // TODO: fill the gaps in prev ids
+    black_prev_game_id: null,
+    result: null
+  }
+  return gameToInsert
 }
 
 /**
@@ -281,7 +330,7 @@ async function generateRoundRobinPairs(
   const entitiesIds = Array.from(entitiesIdIterator);
 
   // creating a copy for dynamic programming way of constructing pairs
-  const remainingEntitiesPool = Array.from);
+  // const remainingEntitiesPool = Array.from();
 
   // until the pool is not zero, we continue slicing it
   while (remainingEntitiesPool.length !== 0) {
