@@ -12,10 +12,27 @@ import {
 } from './db/schema/tournaments';
 import { eq, or, and, aliasedTable} from 'drizzle-orm';
 import { newid } from './utils';
+import { alias } from 'drizzle-orm/sqlite-core';
 
 
+/**
+ * Helper constants for testing purposes
+ */
 const TEST_TOURNAMENT = 'P9pqTDZv';
 const TEST_ROUND_NUMBER = 0;
+
+
+/**
+ * This interface represents big chunk of detailed information for the database game, basically it is 
+ * a grouped info about all the players participating.
+ */
+interface DetailedDatabaseGame{
+  game: DatabaseGame;
+  white_player: DatabasePlayer;
+  black_player: DatabasePlayer;
+  white_ptt: DatabasePlayerToTournament;
+  black_ptt: DatabasePlayerToTournament;
+}
 
 
 /**
@@ -38,7 +55,7 @@ interface ChessTournamentEntity {
 /**
  * This is a set of a possible opponents, by entities' ids
  */
-type PossibleMatches = Set<ChessTournamentEntity['entityId']>;
+type PossibleMatches = Set<ChessTournamentEntity>;
 
 /**
  * This type is representing the bootstrapping material for the map of possible player pools
@@ -85,17 +102,13 @@ type PoolById = Map<ChessTournamentEntity['entityId'], PossibleMatches>;
  * This function gets a list of entities, and populates it as a list of pairs of entity id, to the whole list excluding this entity.
  * This is done to have a bootstrap for mapping entities to the possible opponents for the round.
  * @param matchedEntities list with entities-like objects
+ * @returns initialEntitiesIdPairs
  */
 async function getInitialEntitiesIdPairs(
   matchedEntities: ChessTournamentEntity[],
 ) {
   // initializing a bootstrapping array
-  const initialEntitiesIdPairs: EntityIdPoolPair[] = [];
-
-  // getting a list of an entities ids only, because it's the only useful information for matching here
-  const matchEntitiesIds: ChessTournamentEntity["entityId"][] = matchedEntities.map(
-    (matchedEntity) => matchedEntity.entityId
-  );
+  const initialEntitiesIdPoolPairs: EntityIdPoolPair[] = [];
 
   // filling the bootstrapping array here
   matchedEntities.forEach(
@@ -105,19 +118,19 @@ async function getInitialEntitiesIdPairs(
      * @param matchedEntity
      */
     (matchedEntity: ChessTournamentEntity) => {
-      const matchedEntitiesPool = new Set(matchEntitiesIds);
-      matchedEntitiesPool.delete(matchedEntity.entityId);
+      const matchedEntitiesPool = new Set(matchedEntities);
+      matchedEntitiesPool.delete(matchedEntity);
 
       const poolIdPair: EntityIdPoolPair = [
         matchedEntity.entityId,
         matchedEntitiesPool,
       ];
 
-      initialEntitiesIdPairs.push(poolIdPair);
+      initialEntitiesIdPoolPairs.push(poolIdPair);
     },
   );
 
-  return initialEntitiesIdPairs;
+  return initialEntitiesIdPoolPairs;
 }
 
 /**
@@ -134,7 +147,7 @@ async function convertPlayerToEntity(playerAndPtt: PlayerAndPtt) {
 }
 
 
-async function convertGameToEntitiesMatch(){}
+async function convertGameToEntitiesMatch(databaseDetailedGame){}
 
 /**
  * This function purposefully generates the bracket round for the round robin tournament. It gets the
@@ -164,11 +177,12 @@ async function generateRoundRobinRound(tournamentId: string, roundNumber: number
     eq(games.tournament_id, tournamentId),
   );
 
-  const blackPlayers = aliasedTable(players, "black_player");
-  const whitePlayers = aliasedTable(players, "white_player");
+  const blackPlayers = alias(players, "black_player");
+  const whitePlayers = alias(players, "white_player");
 
 
-  const tournamentGamesWithPlayers = tournamentGamesQuery.innerJoin(
+  const tournamentGamesWithPlayers = tournamentGamesQuery
+  .innerJoin(
     blackPlayers,
     eq(blackPlayers.id, games.black_id)
   ).innerJoin(
@@ -176,22 +190,19 @@ async function generateRoundRobinRound(tournamentId: string, roundNumber: number
     eq(whitePlayers.id, games.white_id)
   )
 
-  const blackPTT = aliasedTable(players_to_tournaments, "black_ptt");
-  const whitePTT = aliasedTable(players_to_tournaments, "white_ptt");
+  const blackPTT = alias(players_to_tournaments, "black_ptt"); // TODO: REMOVE ALL THE ALIASES< NOW THE TYPES ARE BROKEN
+  const whitePTT = alias(players_to_tournaments, "white_ptt");
 
-  const detailedTournamentGames = await tournamentGamesQuery.innerJoin(
-    blackPlayers,
-    eq(blackPlayers.id, games.black_id)
-  ).innerJoin(
-    whitePlayers,
-    eq(whitePlayers.id, games.white_id)
-  ).innerJoin(
-    whitePTT, 
-    and(eq(games.white_id, whitePTT.player_id), eq(whitePTT.tournament_id, tournamentId))
-  ).innerJoin(
-    blackPTT,
-    and(eq(games.white_id, blackPTT.player_id), eq(blackPTT.tournament_id, tournamentId))
-  )
+  const detailedTournamentGames: DetailedDatabaseGame[] = await tournamentGamesWithPlayers
+    .innerJoin(
+      whitePTT,
+      and(eq(games.white_id, whitePTT.player_id), eq(whitePTT.tournament_id, tournamentId))
+    ).innerJoin(
+      blackPTT,
+      and(eq(games.white_id, blackPTT.player_id), eq(blackPTT.tournament_id, tournamentId))
+    ) 
+
+  console.log(detailedTournamentGames)
 
   // TODO: add the game updating mechanism
 
@@ -205,19 +216,19 @@ async function generateRoundRobinRound(tournamentId: string, roundNumber: number
   // getting the bootstrap for the map, initially for all the players the pools are the same
   const initialEntitiesPools = await getInitialEntitiesIdPairs(matchedEntities);
   const poolById: PoolById = new Map(initialEntitiesPools);
-  const poolByIdUpdated = updateChessEntitiesMatches(poolById, tournamentGames);
+  const poolByIdUpdated = updateChessEntitiesMatches(poolById, tournamentGamesQuery);
 
 
   const entitiesMatchingsGenerated = await generateRoundRobinPairs(
     matchedEntities,
-    tournamentGames,
+    tournamentGamesQuery,
   );
   const colouredMatchesPromises =
     entitiesMatchingsGenerated.map(getColouredPair);
   const colouredMatches = await Promise.all(colouredMatchesPromises);
 
 
-  const currentOffset = tournamentGames.length;
+  const currentOffset = tournamentGamesQuery.length;
   const numberedMatchesPromises = colouredMatches.map(
     (colouredMatch, coulouredMatchIndex) => getNumberedPair(colouredMatch, coulouredMatchIndex, currentOffset)
   );
