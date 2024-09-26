@@ -1,14 +1,19 @@
 import { DatabasePlayer } from "@/lib/db/schema/tournaments";
 
+/**
+ * combination of player general info and tournament performance, recorded in players_to_tournaments
+ */
 export interface PlayerModel {
   id: string;
   nickname: string; // players.nickname
   realname?: string | null;
-  rating?: number | null;
+  rating: number | null;
   wins: number;
   draws: number;
   losses: number;
   color_index: number;
+  exited: boolean | null;
+  place: number | null;
 }
 
 export interface GameModel {
@@ -21,6 +26,7 @@ export interface GameModel {
   white_prev_game_id: string | null; // links to other games necessary for elimination-brackets
   round_number: number; // games.round_number
   round_name: RoundName | null; // games.round_name
+  game_number: number;
   result: Result | null; //games.result
 }
 
