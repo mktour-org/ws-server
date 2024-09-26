@@ -1,10 +1,10 @@
 import type { User } from 'lucia';
 import {
-  clubs_to_users,
-  players,
-  players_to_tournaments,
-  tournaments,
-} from './db/schema/tournaments';
+  clubsToUsers,
+  player,
+  playersToTournaments,
+  tournament,
+} from './db/migrations/schema';
 import { db } from './db';
 import { and, eq } from 'drizzle-orm';
 
@@ -17,36 +17,33 @@ export const getStatusInTournament = async (
   if (!user) return 'viewer';
   const clubId = (
     await db
-      .select({ club: tournaments.club_id })
-      .from(tournaments)
-      .where(eq(tournaments.id, tournamentId))
+      .select({ club: tournament.clubId })
+      .from(tournament)
+      .where(eq(tournament.id, tournamentId))
   ).at(0)?.club;
   if (!clubId) throw new Error('cannot resolve tournament organizer');
 
   const dbStatus = (
     await db
-      .select({ status: clubs_to_users.status })
-      .from(clubs_to_users)
+      .select({ status: clubsToUsers.status })
+      .from(clubsToUsers)
       .where(
-        and(
-          eq(clubs_to_users.club_id, clubId),
-          eq(clubs_to_users.user_id, user.id),
-        ),
+        and(eq(clubsToUsers.clubId, clubId), eq(clubsToUsers.userId, user.id)),
       )
   ).at(0)?.status;
   if (dbStatus) return 'organizer';
-  const player = (
-    await db.select().from(players).where(eq(players.user_id, user.id))
+  const playerDb = (
+    await db.select().from(player).where(eq(player.userId, user.id))
   ).at(0);
-  if (!player) return 'viewer';
+  if (!playerDb) return 'viewer';
   const isHere = (
     await db
       .select()
-      .from(players_to_tournaments)
+      .from(playersToTournaments)
       .where(
         and(
-          eq(players_to_tournaments.player_id, player.id),
-          eq(players_to_tournaments.tournament_id, tournamentId),
+          eq(playersToTournaments.playerId, player.id),
+          eq(playersToTournaments.tournamentId, tournamentId),
         ),
       )
   ).at(0);

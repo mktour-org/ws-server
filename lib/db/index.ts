@@ -1,5 +1,4 @@
-import * as schema1 from '@/lib/db/schema/auth';
-import * as schema2 from '@/lib/db/schema/tournaments';
+import * as schema from '@/lib/db/migrations/schema';
 import { createClient } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
 
@@ -8,4 +7,4 @@ export const sqlite = createClient({
   authToken: process.env.DATABASE_AUTH_TOKEN,
 });
 
-export const db = drizzle(sqlite, { schema: { ...schema1, ...schema2 } });
+export const db = drizzle(sqlite, { schema });
