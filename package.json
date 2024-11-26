@@ -18,10 +18,10 @@
     "@libsql/client": "^0.14.0",
     "@lucia-auth/adapter-drizzle": "^1.1.0",
     "dotenv": "^16.4.5",
-    "drizzle-kit": "^0.25.0",
-    "drizzle-orm": "^0.34.1",
-    "lucia": "^3.2.1",
-    "nanoid": "^5.0.7",
-    "prettier": "^3.3.3"
+    "drizzle-kit": "^0.28.1",
+    "drizzle-orm": "^0.36.4",
+    "lucia": "^3.2.2",
+    "nanoid": "^5.0.9",
+    "prettier": "^3.4.1"
   }
 }

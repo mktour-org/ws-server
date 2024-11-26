@@ -1,4 +1,4 @@
-import { DatabasePlayer } from "@/lib/db/schema/tournaments";
+import { DatabasePlayer } from '@/lib/db/schema/tournaments';
 
 /**
  * combination of player general info and tournament performance, recorded in players_to_tournaments
@@ -39,13 +39,13 @@ export interface TournamentModel {
   organizer: {
     id: string; // club.id
     name: string; // club.name
-  }
+  };
   status: TournamentStatus | undefined; // created according to started_at and closed_at
   roundsNumber: number | null; // tournamnets.rounds_number
   ongoingRound: number;
   games: Array<GameModel>; // games where tournament.id === id
   players: Array<PlayerModel>; // players_to_tournaments where tournament.id === id
-  possiblePlayers: Array<DatabasePlayer> // players of organizer club except already added
+  possiblePlayers: Array<DatabasePlayer>; // players of organizer club except already added
 }
 
 type Result = '0-1' | '1-0' | '1/2-1/2';
