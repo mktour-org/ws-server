@@ -1,6 +1,6 @@
 # use the official Bun image
 # see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:latest as base
+FROM oven/bun:latest AS base
 WORKDIR /usr/src/app
 
 # install dependencies into temp directory
@@ -32,6 +32,6 @@ COPY --from=prerelease /usr/src/app/ .
 
 # run the app
 USER bun
-ENV PORT 7070
+ENV PORT=7070
 EXPOSE 7070/tcp
 ENTRYPOINT [ "bun", "start" ]
