@@ -18,8 +18,9 @@ const server = Bun.serve<WebSocketData>({
   tls: TLS,
   async fetch(req, server) {
     const url = new URL(req.url);
+    const session = req.headers.get('sec-websocket-protocol')
     const { user } = await validateRequest(
-      url.searchParams.get('auth_session') ?? '',
+      session ?? '',
     );
 
     const tournamentId = url.pathname.replace('/', '');
